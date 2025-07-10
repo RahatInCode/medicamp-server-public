@@ -1,17 +1,40 @@
 const Camp = require("../models/camp");
+const mongoose = require("mongoose");
 
+// ✅ Get all camps
 const getAllCamps = async (req, res) => {
   try {
-    // Fetch all camps, sorted by participantCount descending
-    const camps = await Camp.find().sort({ participantCount: -1 });
-    res.status(200).json(camps);
-  } catch (error) {
-    console.error("Error fetching camps:", error);  // fixed error logging here
-    res.status(500).json({ error: "Failed to fetch camps" });
+    const camps = await Camp.find();
+    res.json(camps);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch camps" });
   }
 };
 
-module.exports = { getAllCamps };
+// ✅ Get camp by ID
+const getCampById = async (req, res) => {
+  const { id } = req.params;
+
+  // Validate ObjectId
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid camp ID" });
+  }
+
+  try {
+    const camp = await Camp.findById(id);
+    if (!camp) {
+      return res.status(404).json({ message: "Camp not found" });
+    }
+    res.json(camp);
+  } catch (err) {
+    console.error("❌ Error getting camp by ID:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { getAllCamps, getCampById };
+
+
 
 
 

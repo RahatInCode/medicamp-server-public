@@ -1,9 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { getAllCamps } = require("../controllers/campController");
+const { getAllCamps, getCampById } = require("../controllers/campController");
 
-// GET /available-camps/ -> get all camps
+// GET all camps
 router.get("/", getAllCamps);
 
+// ✅ GET camp by ID (handled in controller)
+router.get("/:id", getCampById);
+
 module.exports = router;
+
 
