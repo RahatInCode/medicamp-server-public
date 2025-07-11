@@ -32,7 +32,28 @@ const getCampById = async (req, res) => {
   }
 };
 
-module.exports = { getAllCamps, getCampById };
+// ✅ Increment participant count
+const incrementParticipantCount = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedCamp = await Camp.findByIdAndUpdate(
+      id,
+      { $inc: { participantCount: 1 } },
+      { new: true }
+    );
+
+    if (!updatedCamp) {
+      return res.status(404).json({ message: "Camp not found" });
+    }
+
+    res.status(200).json(updatedCamp);
+  } catch (error) {
+    console.error("Error incrementing participant count:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { getAllCamps, getCampById, incrementParticipantCount };
 
 
 
