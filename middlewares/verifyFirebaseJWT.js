@@ -1,26 +1,28 @@
+const admin = require('firebase-admin');
+const serviceAccount = require('../firebaseAdminCredentials.json'); 
 
-const admin = require("../utils/FirebaseAdmin");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
-const verifyFirebaseJWT = async (req, res, next) => {
+const verifyJWT = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  console.log("🔐 Auth header received:", authHeader);
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    console.log("❌ No token or malformed token");
-    return res.status(401).json({ error: "Unauthorized - no token" });
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token' });
   }
 
-  const idToken = authHeader.split(" ")[1];
-
+  const token = authHeader.split(' ')[1];
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    console.log("✅ Firebase token verified:", decodedToken);
-    req.user = decodedToken; // contains uid, email, etc.
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.user = decoded;
+    console.log('✅ Token verified:', decoded.email); 
     next();
-  } catch (err) {
-    console.error("❌ Firebase token verification failed:", err.message);
-    return res.status(401).json({ error: "Unauthorized - invalid token" });
+  } catch (error) {
+    console.error('❌ JWT verification failed:', error.message); 
+    return res.status(403).json({ error: 'Invalid token' });
   }
 };
 
-module.exports = verifyFirebaseJWT;
+module.exports = verifyJWT;
+

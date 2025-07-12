@@ -3,7 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-
+const userRoutes = require('./routes/userRoutes');
 const campRoutes = require('./routes/campRoutes');
 const participantRoutes = require('./routes/ParticipantRegistration');
 
@@ -21,9 +21,11 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
-app.use('/camps', campRoutes);
-app.use('/availableCamps', campRoutes);
-app.use('/participantRegistrations', participantRoutes);
+// Route mounting
+
+app.use('/camps', campRoutes); 
+app.use('/users', userRoutes); 
+app.use('/participantRegistrations', participantRoutes); // For /participantRegistrations/*
 // DB Connection
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -44,4 +46,4 @@ app.get('/', (req, res) => {
 
 app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
-});
+}); 

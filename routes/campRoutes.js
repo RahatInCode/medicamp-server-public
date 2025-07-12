@@ -1,41 +1,49 @@
 const express = require("express");
 const router = express.Router();
-const Camp = require("../models/camp"); // 👈 Add this
-
+const Camp = require("../models/camp");
+const verifyJWT = require("../middlewares/verifyFirebaseJWT");
 const {
   getAllCamps,
   getCampById,
   incrementParticipantCount,
 } = require("../controllers/campController");
 
-const verifyFirebaseJWT = require("../middlewares/verifyFirebaseJWT");
-
 // 🟢 Public Route - fetch all camps
 router.get("/", getAllCamps);
 
 // 🟢 Public Route - Top 6 most registered camps
-router.get('/top', async (req, res) => {
+router.get("/top", async (req, res) => {
   try {
-    const topCamps = await Camp.find()
-      .sort({ participantCount: -1 }) // Highest registered first
-      .limit(6);
+    const topCamps = await Camp.find().sort({ participantCount: -1 }).limit(6);
     res.json(topCamps);
   } catch (error) {
-    console.error('Error fetching top camps:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching top camps:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
+// 🔒 Optionally Protected Route - fetch one camp by ID
+// 👉 Change this to match frontend: /availableCamps/:id
+router.get("/:id", getCampById, verifyJWT,   async (req, res) => {
+  try {
+    const camp = await Camp.findById(req.params.id);
 
-// 🔒 Protected Route - fetch one camp by ID (requires Firebase token)
-router.get("/:id", verifyFirebaseJWT, getCampById);
+    if (!camp) {
+      return res.status(404).json({ error: "Camp not found" });
+    }
 
+    res.json(camp);
+  } catch (err) {
+    console.error("❌ Error fetching camp:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
-
-// 🔧 NEW Route - Increment participant count by 1 for a specific camp
+// 🔧 Route - Increment participant count
 router.patch("/increment/:id", incrementParticipantCount);
 
 module.exports = router;
+
 
 
 

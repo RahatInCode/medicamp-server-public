@@ -6,7 +6,7 @@ const verifyJWT = require('../middlewares/verifyJWT');
 router.get('/organizer-only', verifyJWT, async (req, res) => {
   const userEmail = req.user.email;
 
-  const User = require('../models/user');
+  const User = require('../models/User');
   const user = await User.findOne({ email: userEmail });
 
   if (user?.role !== 'organizer') {
