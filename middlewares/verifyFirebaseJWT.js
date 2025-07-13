@@ -1,28 +1,32 @@
-const admin = require('firebase-admin');
-const serviceAccount = require('../firebaseAdminCredentials.json'); 
+// middlewares/verifyFirebaseJWT.js
+const admin = require("firebase-admin");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(require("../firebaseAdminCredentials.json")),
+  });
+}
 
 const verifyJWT = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized - No token' });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Unauthorized: No token provided" });
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split(" ")[1];
+
   try {
-    const decoded = await admin.auth().verifyIdToken(token);
-    req.user = decoded;
-    console.log('✅ Token verified:', decoded.email); 
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken; 
     next();
   } catch (error) {
-    console.error('❌ JWT verification failed:', error.message); 
-    return res.status(403).json({ error: 'Invalid token' });
+    console.error("JWT Verification Failed:", error.message);
+    return res.status(403).json({ message: "Forbidden: Invalid token" });
   }
 };
 
 module.exports = verifyJWT;
+
+
 

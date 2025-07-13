@@ -1,22 +1,29 @@
 const mongoose = require("mongoose");
 
 const campSchema = new mongoose.Schema({
-  campName: String,
-  image: String,
-  campFees: Number,
-  dateTime: String,
-  location: String,
-  healthcareProfessional: String,
+  campName: { type: String, required: true },
+  image: { type: String, required: true },
+  campFees: { type: Number, required: true },
+  dateTime: { type: String, required: true },
+  location: { type: String, required: true },
+  healthcareProfessional: { type: String, required: true },
   participantCount: {
     type: Number,
     default: 0,
   },
-  description: String,
+  description: { type: String, required: true },
+
+  organizerEmail: {
+    type: String,
+    required: true,
+  },
 }, { timestamps: true });
 
-// 3rd param "available-camps" binds model to the exact collection name in MongoDB
-const Camp = mongoose.model("Camp", campSchema, "availableCamps");
+// ⛑️ Prevent OverwriteModelError
+const Camp = mongoose.models.Camp || mongoose.model("Camp", campSchema, "availableCamps");
 
 module.exports = Camp;
+
+
 
 

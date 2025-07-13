@@ -25,7 +25,7 @@ app.use(express.json());
 
 app.use('/camps', campRoutes); 
 app.use('/users', userRoutes); 
-app.use('/participantRegistrations', participantRoutes); // For /participantRegistrations/*
+app.use('/participantRegistrations', participantRoutes);
 // DB Connection
 const MONGO_URI = process.env.MONGO_URI;
 

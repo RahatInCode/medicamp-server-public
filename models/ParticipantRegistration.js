@@ -6,13 +6,24 @@ const registrationSchema = new mongoose.Schema({
   campFees: Number,
   location: String,
   healthcareProfessional: String,
+
   participantName: String,
   participantEmail: String,
   age: Number,
   phone: String,
   gender: String,
   emergencyContact: String,
-  createdAt: { type: Date, default: Date.now }
+
+  organizerEmail: {
+    type: String,
+    required: true, 
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  }
 });
 
 module.exports = mongoose.model('ParticipantRegistration', registrationSchema);
+
