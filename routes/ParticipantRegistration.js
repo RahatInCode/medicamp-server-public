@@ -3,6 +3,27 @@ const router = express.Router();
 const verifyJWT = require('../middlewares/verifyFirebaseJWT');
 const ParticipantRegistration = require('../models/ParticipantRegistration');
 const Camp = require('../models/camp');
+// ✅ MOVE THIS TO participantRegistrations.js
+router.get('/organizer/:email', verifyJWT, async (req, res) => {
+  const requestedEmail = req.params.email.toLowerCase();
+  const loggedInEmail = req.user.email.toLowerCase();
+
+  console.log(`GET /participantRegistrations/organizer/${requestedEmail} called by:`, loggedInEmail);
+
+  if (requestedEmail !== loggedInEmail) {
+    console.warn("Email mismatch! Access denied.");
+    return res.status(403).json({ error: "Forbidden: You can only view your own registrations" });
+  }
+
+  try {
+    const registrations = await ParticipantRegistration.find({ organizerEmail: requestedEmail });
+    console.log(`Found ${registrations.length} registrations for organizer ${requestedEmail}`);
+    res.json(registrations);
+  } catch (err) {
+    console.error("❌ Error fetching registrations:", err.message);
+    res.status(500).json({ error: "Failed to fetch registrations" });
+  }
+});
 
 router.post('/', verifyJWT, async (req, res) => {
   const user = req.user;
@@ -64,6 +85,7 @@ router.post('/', verifyJWT, async (req, res) => {
     console.error('❌ Registration error:', err.message);
     res.status(500).json({ error: 'Server error during registration' });
   }
+  
 });
 
 module.exports = router;

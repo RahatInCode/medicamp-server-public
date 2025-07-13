@@ -39,27 +39,66 @@ router.get("/:id", verifyJWT, async (req, res) => {
   }
 });
 
-// 🔒 Protected GET all registrations for an organizer (secure!)
-router.get('/organizer/:email', verifyJWT, async (req, res) => {
-  const requestedEmail = req.params.email.toLowerCase();
-  const loggedInEmail = req.user.email.toLowerCase();
+// 🔒 Organizer-only: Update a camp
+router.put('/update-camp/:campId', verifyJWT, async (req, res) => {
+  const { campId } = req.params;
+  const user = req.user;
 
-  console.log(`GET /participantRegistrations/organizer/${requestedEmail} called by:`, loggedInEmail);
+  console.log(`PUT /camps/update-camp/${campId} called by user: ${user.email}`);
 
-  if (requestedEmail !== loggedInEmail) {
-    console.warn("Email mismatch! Access denied.");
-    return res.status(403).json({ error: "Forbidden: You can only view your own registrations" });
+  if (user.role !== 'organizer') {
+    return res.status(403).json({ error: 'Only organizers can update camps' });
   }
 
   try {
-    const registrations = await ParticipantRegistration.find({ organizerEmail: requestedEmail });
-    console.log(`Found ${registrations.length} registrations for organizer ${requestedEmail}`);
-    res.json(registrations);
+    const camp = await Camp.findById(campId);
+    if (!camp) {
+      return res.status(404).json({ error: 'Camp not found' });
+    }
+
+    if (camp.organizerEmail.toLowerCase() !== user.email.toLowerCase()) {
+      return res.status(403).json({ error: 'You can only update your own camps' });
+    }
+
+    const updated = await Camp.findByIdAndUpdate(campId, req.body, { new: true });
+    console.log('✅ Camp updated:', updated._id);
+    res.json({ message: 'Camp updated', updated });
   } catch (err) {
-    console.error("❌ Error fetching registrations:", err.message);
-    res.status(500).json({ error: "Failed to fetch registrations" });
+    console.error('❌ Failed to update camp:', err.message);
+    res.status(500).json({ error: 'Failed to update camp' });
   }
 });
+
+// 🔒 Organizer-only: Delete a camp
+router.delete('/delete-camp/:campId', verifyJWT, async (req, res) => {
+  const { campId } = req.params;
+  const user = req.user;
+
+  console.log(`DELETE /camps/delete-camp/${campId} called by user: ${user.email}`);
+
+  if (user.role !== 'organizer') {
+    return res.status(403).json({ error: 'Only organizers can delete camps' });
+  }
+
+  try {
+    const camp = await Camp.findById(campId);
+    if (!camp) {
+      return res.status(404).json({ error: 'Camp not found' });
+    }
+
+    if (camp.organizerEmail.toLowerCase() !== user.email.toLowerCase()) {
+      return res.status(403).json({ error: 'You can only delete your own camps' });
+    }
+
+    await Camp.findByIdAndDelete(campId);
+    console.log('🗑️ Camp deleted:', campId);
+    res.json({ message: 'Camp deleted successfully' });
+  } catch (err) {
+    console.error('❌ Failed to delete camp:', err.message);
+    res.status(500).json({ error: 'Failed to delete camp' });
+  }
+});
+
 
 // 🔒 Organizer-only: Create a camp
 router.post('/', verifyJWT, async (req, res) => {
