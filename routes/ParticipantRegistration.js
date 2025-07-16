@@ -16,7 +16,10 @@ router.get('/user', verifyJWT, async (req, res) => {
   }
 
   try {
-    const registrations = await ParticipantRegistration.find({ participantEmail: email });
+   const registrations = await ParticipantRegistration.find({
+  participantEmail: { $regex: new RegExp(`^${email}$`, 'i') }
+});
+
     res.json(registrations);
   } catch (err) {
     console.error("❌ Failed to fetch user registrations:", err.message);
@@ -36,21 +39,41 @@ router.delete('/:id', verifyJWT, async (req, res) => {
       return res.status(404).json({ error: "Registration not found" });
     }
 
-    // 🔐 Security check: Only the user who registered can delete it
+    // ✅ Match user
     if (registration.participantEmail.toLowerCase() !== userEmail) {
       console.warn("🚫 Unauthorized delete attempt by:", userEmail);
       return res.status(403).json({ error: "You can only cancel your own registration" });
     }
 
+    // ✅ Check if payment was made — mock for now
+    const paymentMade = false; // ❗ Replace this with real logic if needed
+
+    if (paymentMade) {
+      return res.status(400).json({
+        error: "Cancellation denied: This registration has already been paid. Please contact support if you need assistance.",
+      });
+    }
+
+    // ✅ Decrement participant count in the camp
+    const camp = await Camp.findById(registration.campId);
+    if (camp) {
+      camp.participantCount = Math.max(0, camp.participantCount - 1);
+      await camp.save();
+      console.log(`👥 Updated camp participant count: ${camp.participantCount}`);
+    }
+
+    // ✅ Delete the registration
     await ParticipantRegistration.findByIdAndDelete(id);
     console.log(`✅ Registration cancelled by ${userEmail} for camp: ${registration.campName}`);
-    res.json({ message: "Registration cancelled successfully" });
+
+    res.json({ message: "Your registration has been cancelled successfully." });
 
   } catch (err) {
     console.error("❌ Error cancelling registration:", err.message);
     res.status(500).json({ error: "Server error during cancellation" });
   }
 });
+
 
 
 router.post('/', verifyJWT, async (req, res) => {

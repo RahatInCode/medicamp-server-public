@@ -4,6 +4,28 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const verifyJWT = require('../middlewares/verifyFirebaseJWT');
+// 🔓 PUBLIC USER CREATE ROUTE
+router.post('/public', async (req, res) => {
+  const { name, email } = req.body;
+
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  try {
+    const existing = await User.findOne({ email });
+    if (existing) return res.json(existing);
+
+    const role = email === "organizer@medicamp.com" ? "organizer" : "participant";
+
+    const newUser = await User.create({ email, name, role });
+    console.log(`✅ New user saved: ${email} as ${role}`);
+    res.status(201).json(newUser);
+  } catch (error) {
+    console.error("Error saving public user:", error.message);
+    res.status(500).json({ error: "Failed to create user" });
+  }
+});
+
+
 router.put('/', verifyJWT, async (req, res) => {
   const { email, name } = req.body;
 
