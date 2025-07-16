@@ -1,5 +1,6 @@
-// middlewares/verifyFirebaseJWT.js
 const admin = require("firebase-admin");
+const User = require('../models/User');
+const Organizer = require('../models/organizer');
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -7,13 +8,12 @@ if (!admin.apps.length) {
   });
 }
 
-const User = require('../models/User'); // Your User mongoose model
-
 const verifyJWT = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Unauthorized: No token provided" });
   }
+
   const token = authHeader.split(" ")[1];
 
   try {
@@ -24,20 +24,33 @@ const verifyJWT = async (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized: No email in token" });
     }
 
-    // Fetch user from DB to get role
-    const userFromDb = await User.findOne({ email }).select('role email');
+    // 🔍 First try User collection
+    let userFromDb = await User.findOne({ email }).select('role email');
 
+    // ❗ If not found, check Organizer
     if (!userFromDb) {
-      return res.status(401).json({ message: "Unauthorized: User not found" });
+      const organizer = await Organizer.findOne({ email }).select('email');
+      if (!organizer) {
+        return res.status(401).json({ message: "Unauthorized: User not found in any collection" });
+      }
+
+      req.user = {
+        email: organizer.email,
+        role: "organizer", // You can extend this later to be dynamic
+        uid: decodedToken.uid,
+      };
+
+      console.log("✅ Authenticated organizer:", req.user.email);
+    } else {
+      req.user = {
+        email: userFromDb.email,
+        role: userFromDb.role,
+        uid: decodedToken.uid,
+      };
+
+      console.log("✅ Authenticated user:", req.user.email, "Role:", req.user.role);
     }
 
-    req.user = {
-      email: userFromDb.email,
-      role: userFromDb.role,
-      uid: decodedToken.uid,
-    };
-
-    console.log("✅ Authenticated user:", req.user.email, "Role:", req.user.role);
     next();
 
   } catch (error) {
@@ -46,8 +59,8 @@ const verifyJWT = async (req, res, next) => {
   }
 };
 
-
 module.exports = verifyJWT;
+
 
 
 

@@ -6,7 +6,8 @@ const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const campRoutes = require('./routes/campRoutes');
 const participantRoutes = require('./routes/ParticipantRegistration');
-
+const organizerRoutes = require("./routes/organizers");
+const paymentRoutes = require('./routes/paymentRoutes');
 
 
 
@@ -23,9 +24,11 @@ app.use(express.json());
 // Routes
 // Route mounting
 
+app.use('/organizers', require('./routes/organizers'));
 app.use('/camps', campRoutes); 
 app.use('/users', userRoutes); 
 app.use('/participantRegistrations', participantRoutes);
+app.use('/api/payments', paymentRoutes);
 // DB Connection
 const MONGO_URI = process.env.MONGO_URI;
 
