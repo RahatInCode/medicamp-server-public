@@ -11,6 +11,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 
 
 
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -28,7 +29,10 @@ app.use('/organizers', require('./routes/organizers'));
 app.use('/camps', campRoutes); 
 app.use('/users', userRoutes); 
 app.use('/participantRegistrations', participantRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/api/payment', paymentRoutes);
+
+
+
 // DB Connection
 const MONGO_URI = process.env.MONGO_URI;
 
