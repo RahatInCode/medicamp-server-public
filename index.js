@@ -8,6 +8,7 @@ const campRoutes = require('./routes/campRoutes');
 const participantRoutes = require('./routes/ParticipantRegistration');
 const organizerRoutes = require("./routes/organizers");
 const paymentRoutes = require('./routes/paymentRoutes');
+const stripeRoutes = require('./routes/stripePayment');
 
 
 
@@ -29,7 +30,8 @@ app.use('/organizers', require('./routes/organizers'));
 app.use('/camps', campRoutes); 
 app.use('/users', userRoutes); 
 app.use('/participantRegistrations', participantRoutes);
-app.use('/api/payment', paymentRoutes);
+app.use('/payment', stripeRoutes);
+app.use('/payment', paymentRoutes);
 
 
 
