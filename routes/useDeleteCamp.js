@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 const deleteCamp = async (campId, token) => {
-  return axios.delete(`http://localhost:3000/camps/delete-camp/${campId}`, {
+  return axios.delete(`https://medicamp-server-five.vercel.app/camps/delete-camp/${campId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
