@@ -36,7 +36,7 @@ const verifyJWT = async (req, res, next) => {
 
       req.user = {
         email: organizer.email,
-        role: "organizer", // You can extend this later to be dynamic
+        role: "organizer", 
         uid: decodedToken.uid,
       };
 

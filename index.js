@@ -9,18 +9,27 @@ const participantRoutes = require('./routes/ParticipantRegistration');
 const organizerRoutes = require("./routes/organizers");
 const paymentRoutes = require('./routes/paymentRoutes');
 const stripeRoutes = require('./routes/stripePayment');
-
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
 
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
+
+const allowedOrigins = ['https://medicamp-1e9cc.web.app'];
+
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS: ' + origin));
+    }
+  },
   credentials: true,
 }));
+
 app.use(express.json());
 
 // Routes
@@ -32,7 +41,7 @@ app.use('/users', userRoutes);
 app.use('/participantRegistrations', participantRoutes);
 app.use('/payment', stripeRoutes);
 app.use('/payment', paymentRoutes);
-
+app.use('/feedback', feedbackRoutes);
 
 
 // DB Connection
