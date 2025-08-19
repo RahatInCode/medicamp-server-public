@@ -7,6 +7,9 @@ const FeedbackSchema = new mongoose.Schema({
   campId: { type: mongoose.Schema.Types.ObjectId, ref: 'Camp', required: true },
   rating: { type: Number, min: 1, max: 5, required: true },
   feedback: { type: String, required: true },
+  approved: { type: Boolean, default: false }, // <-- NEW
 }, { timestamps: true });
 
 module.exports = mongoose.model('Feedback', FeedbackSchema);
+
+
